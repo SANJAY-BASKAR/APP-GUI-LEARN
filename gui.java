@@ -248,7 +248,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class PostgreSQLExample {
+public class gui {
     public static void main(String[] args) {
         // Database URL, username, and password
         String url = "jdbc:postgresql://localhost:5432/exampledb";
@@ -315,5 +315,3 @@ public class PostgreSQLExample {
     }
 }
 
-    }
-}
