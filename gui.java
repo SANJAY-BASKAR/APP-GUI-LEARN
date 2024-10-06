@@ -207,34 +207,113 @@
 //    }
 //}
 
+//import javax.swing.*;
+//import java.awt.*;
+//
+//public class gui {
+//    public static void main(String[] args) {
+//        JFrame frame = new JFrame("Panel with FlowLayout");
+//        frame.setSize(300, 200);
+//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        frame.setLayout(new FlowLayout());
+//
+//        // Create a panel with BoxLayout for vertical layout
+//        JPanel panel = new JPanel();
+//        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+//
+//        panel.add(new JLabel("Name:"));
+//        panel.add(new JTextField(15));
+//
+//        // Add spacing
+//        panel.add(Box.createVerticalStrut(10));
+//
+//        panel.add(new JLabel("Age:"));
+//        panel.add(new JTextField(3));
+//
+//        panel.add(Box.createVerticalStrut(10));
+//
+//        panel.add(new JButton("Submit"));
+//
+//        frame.add(panel);
+//        frame.setVisible(true);
+//    }
+//}
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
-public class gui {
+public class PostgreSQLExample {
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Panel with FlowLayout");
+        // Database URL, username, and password
+        String url = "jdbc:postgresql://localhost:5432/exampledb";
+        String user = "your_username";  // replace with your PostgreSQL username
+        String password = "your_password";  // replace with your PostgreSQL password
+
+        JFrame frame = new JFrame("Data Entry Form");
         frame.setSize(300, 200);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new FlowLayout());
+        frame.setLayout(new GridLayout(3, 2));
 
-        // Create a panel with BoxLayout for vertical layout
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        // Input components
+        JLabel nameLabel = new JLabel("Name:");
+        JTextField nameField = new JTextField(15);
+        JLabel ageLabel = new JLabel("Age:");
+        JTextField ageField = new JTextField(3);
+        JButton submitButton = new JButton("Submit");
 
-        panel.add(new JLabel("Name:"));
-        panel.add(new JTextField(15));
+        // Add components to the frame
+        frame.add(nameLabel);
+        frame.add(nameField);
+        frame.add(ageLabel);
+        frame.add(ageField);
+        frame.add(new JLabel("")); // empty label for grid alignment
+        frame.add(submitButton);
 
-        // Add spacing
-        panel.add(Box.createVerticalStrut(10));
+        // Action listener for the Submit button
+        submitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String name = nameField.getText();
+                int age;
 
-        panel.add(new JLabel("Age:"));
-        panel.add(new JTextField(3));
+                // Check and parse age input
+                try {
+                    age = Integer.parseInt(ageField.getText());
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(frame, "Please enter a valid age.");
+                    return;
+                }
 
-        panel.add(Box.createVerticalStrut(10));
+                // Database connection and insert
+                try (Connection conn = DriverManager.getConnection(url, user, password)) {
+                    String sql = "INSERT INTO users (name, age) VALUES (?, ?)";
+                    PreparedStatement statement = conn.prepareStatement(sql);
+                    statement.setString(1, name);
+                    statement.setInt(2, age);
+                    statement.executeUpdate();
 
-        panel.add(new JButton("Submit"));
+                    JOptionPane.showMessageDialog(frame, "Data inserted successfully!");
 
-        frame.add(panel);
+                    // Clear fields after submission
+                    nameField.setText("");
+                    ageField.setText("");
+
+                } catch (SQLException ex) {
+//                    ex.printStackTrace();
+//                    JOptionPane.showMessageDialog(frame, "Error connecting to the database.");
+                }
+            }
+        });
+
         frame.setVisible(true);
+    }
+}
+
     }
 }
