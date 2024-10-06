@@ -238,80 +238,159 @@
 //        frame.setVisible(true);
 //    }
 //}
+//
+//import javax.swing.*;
+//import java.awt.*;
+//import java.awt.event.ActionEvent;
+//import java.awt.event.ActionListener;
+//import java.sql.Connection;
+//import java.sql.DriverManager;
+//import java.sql.PreparedStatement;
+//import java.sql.SQLException;
+//
+//public class gui {
+//    public static void main(String[] args) {
+//        // Database URL, username, and password
+//        String url = "jdbc:postgresql://localhost:5432/exampledb";
+//        String user = "your_username";  // replace with your PostgreSQL username
+//        String password = "your_password";  // replace with your PostgreSQL password
+//
+//        JFrame frame = new JFrame("Data Entry Form");
+//        frame.setSize(300, 200);
+//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        frame.setLayout(new GridLayout(3, 2));
+//
+//        // Input components
+//        JLabel nameLabel = new JLabel("Name:");
+//        JTextField nameField = new JTextField(15);
+//        JLabel ageLabel = new JLabel("Age:");
+//        JTextField ageField = new JTextField(3);
+//        JButton submitButton = new JButton("Submit");
+//
+//        // Add components to the frame
+//        frame.add(nameLabel);
+//        frame.add(nameField);
+//        frame.add(ageLabel);
+//        frame.add(ageField);
+//        frame.add(new JLabel("")); // empty label for grid alignment
+//        frame.add(submitButton);
+//
+//        // Action listener for the Submit button
+//        submitButton.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                String name = nameField.getText();
+//                int age;
+//
+//                // Check and parse age input
+//                try {
+//                    age = Integer.parseInt(ageField.getText());
+//                } catch (NumberFormatException ex) {
+//                    JOptionPane.showMessageDialog(frame, "Please enter a valid age.");
+//                    return;
+//                }
+//
+//                // Database connection and insert
+//                try (Connection conn = DriverManager.getConnection(url, user, password)) {
+//                    String sql = "INSERT INTO users (name, age) VALUES (?, ?)";
+//                    PreparedStatement statement = conn.prepareStatement(sql);
+//                    statement.setString(1, name);
+//                    statement.setInt(2, age);
+//                    statement.executeUpdate();
+//
+//                    JOptionPane.showMessageDialog(frame, "Data inserted successfully!");
+//
+//                    // Clear fields after submission
+//                    nameField.setText("");
+//                    ageField.setText("");
+//
+//                } catch (SQLException ex) {
+////                    ex.printStackTrace();
+////                    JOptionPane.showMessageDialog(frame, "Error connecting to the database.");
+//                }
+//            }
+//        });
+//
+//        frame.setVisible(true);
+//    }
+//}
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
+import javax.swing.table.DefaultTableModel;
 
 public class gui {
     public static void main(String[] args) {
-        // Database URL, username, and password
-        String url = "jdbc:postgresql://localhost:5432/exampledb";
-        String user = "your_username";  // replace with your PostgreSQL username
-        String password = "your_password";  // replace with your PostgreSQL password
-
-        JFrame frame = new JFrame("Data Entry Form");
-        frame.setSize(300, 200);
+        JFrame frame = new JFrame("Data Entry and Retrieval");
+        frame.setSize(300, 150);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new GridLayout(3, 2));
+        frame.setLayout(new GridLayout(4, 2));
 
-        // Input components
-        JLabel nameLabel = new JLabel("Name:");
         JTextField nameField = new JTextField(15);
-        JLabel ageLabel = new JLabel("Age:");
         JTextField ageField = new JTextField(3);
         JButton submitButton = new JButton("Submit");
+        JButton retrieveButton = new JButton("Retrieve Data");
 
-        // Add components to the frame
-        frame.add(nameLabel);
+        frame.add(new JLabel("Name:"));
         frame.add(nameField);
-        frame.add(ageLabel);
+        frame.add(new JLabel("Age:"));
         frame.add(ageField);
-        frame.add(new JLabel("")); // empty label for grid alignment
+        frame.add(new JLabel(""));
         frame.add(submitButton);
+        frame.add(new JLabel(""));
+        frame.add(retrieveButton);
 
-        // Action listener for the Submit button
-        submitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String name = nameField.getText();
-                int age;
+        submitButton.addActionListener(e -> {
+            String url = "jdbc:postgresql://localhost:5432/exampledb";
+            String user = "postgres";
+            String password = "sanjay2005";
 
-                // Check and parse age input
-                try {
-                    age = Integer.parseInt(ageField.getText());
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(frame, "Please enter a valid age.");
-                    return;
+            try (Connection conn = DriverManager.getConnection(url, user, password);
+                 PreparedStatement stmt = conn.prepareStatement("INSERT INTO users (name, age) VALUES (?, ?)")) {
+
+                stmt.setString(1, nameField.getText());
+                stmt.setInt(2, Integer.parseInt(ageField.getText()));
+                stmt.executeUpdate();
+                JOptionPane.showMessageDialog(frame, "Data inserted!");
+
+                nameField.setText("");
+                ageField.setText("");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
+            }
+        });
+
+        retrieveButton.addActionListener(e -> {
+            String url = "jdbc:postgresql://localhost:5432/exampledb";
+            String user = "postgres";
+            String password = "sanjay2005";
+
+            try (Connection conn = DriverManager.getConnection(url, user, password);
+                 Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery("SELECT * FROM users")) {
+
+                // Create table model and populate it
+                DefaultTableModel model = new DefaultTableModel(new String[] {"ID", "Name", "Age"}, 0);
+                while (rs.next()) {
+                    int id = rs.getInt("id");
+                    String name = rs.getString("name");
+                    int age = rs.getInt("age");
+                    model.addRow(new Object[] {id, name, age});
                 }
 
-                // Database connection and insert
-                try (Connection conn = DriverManager.getConnection(url, user, password)) {
-                    String sql = "INSERT INTO users (name, age) VALUES (?, ?)";
-                    PreparedStatement statement = conn.prepareStatement(sql);
-                    statement.setString(1, name);
-                    statement.setInt(2, age);
-                    statement.executeUpdate();
-
-                    JOptionPane.showMessageDialog(frame, "Data inserted successfully!");
-
-                    // Clear fields after submission
-                    nameField.setText("");
-                    ageField.setText("");
-
-                } catch (SQLException ex) {
-//                    ex.printStackTrace();
-//                    JOptionPane.showMessageDialog(frame, "Error connecting to the database.");
-                }
+                // Create and display table in a new window
+                JTable table = new JTable(model);
+                JScrollPane scrollPane = new JScrollPane(table);
+                JFrame tableFrame = new JFrame("Retrieved Data");
+                tableFrame.setSize(400, 200);
+                tableFrame.add(scrollPane);
+                tableFrame.setVisible(true);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
             }
         });
 
         frame.setVisible(true);
     }
 }
-
